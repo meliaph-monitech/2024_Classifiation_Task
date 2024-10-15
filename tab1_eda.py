@@ -58,8 +58,13 @@ if uploaded_files:
     # Step 6: Display the data before filtering
     st.write("### Data before filtering")
     df_before, df_filtered = preprocess_data(df, selected_column, filter_threshold)
-    st.line_chart(df_before[selected_column])  # Visualize the data before filtering
+    
+    # Visualize NIR and VIS data before filtering
+    if 'NIR' in df_before.columns and 'VIS' in df_before.columns:
+        st.line_chart(df_before[['NIR', 'VIS']])  # Visualize NIR and VIS before filtering
     
     # Step 7: Display the data after filtering
     st.write("### Data after filtering")
-    st.line_chart(df_filtered[selected_column])  # Visualize the data after filtering
+    if 'NIR' in df_filtered.columns and 'VIS' in df_filtered.columns:
+        st.line_chart(df_filtered[['NIR', 'VIS']])  # Visualize NIR and VIS after filtering
+
