@@ -9,16 +9,15 @@ Original file is located at
 
 import streamlit as st
 import pandas as pd
-import os
 
-# Function to preprocess data: remove fourth column and filter based on selected column
+# Function to preprocess data: remove the fourth column and filter based on selected column
 def preprocess_data(df, filter_column, filter_threshold):
     # Remove the fourth column
     df = df.iloc[:, :-1]
-
+    
     # Filter data based on selected column and threshold
     filtered_df = df[df[filter_column].astype(float) > filter_threshold]
-
+    
     return df, filtered_df
 
 # Streamlit App for Data Preprocessing
@@ -32,30 +31,35 @@ if uploaded_files:
 
     # Read each file into a DataFrame and store them in a dictionary
     dataframes = {file.name: pd.read_csv(file) for file in uploaded_files}
+    
+    # Step 2: Extract column names from the first uploaded file
+    first_file_name = uploaded_files[0].name
+    first_df = dataframes[first_file_name]
+    columns = first_df.columns.tolist()  # Get the column names dynamically
+    
+    # Step 3: Select the column for filtering
+    selected_column = st.selectbox("Select the column to filter on", columns, index=2)  # Default to the third column
 
-    # Step 2: Select the column for filtering (NIR, VIS, or LO)
-    st.write("Commonly the data contains the following columns: NIR, VIS, LO.")
-    columns = ['NIR', 'VIS', 'LO']  # We can assume these are always the same
-    selected_column = st.selectbox("Select the column to filter on", columns)
+    # Step 4: Set the threshold for filtering using a slider
+    min_value = first_df[selected_column].min()  # Get minimum value from the selected column
+    max_value = first_df[selected_column].max()  # Get maximum value from the selected column
+    filter_threshold = st.slider(f"Set the threshold for {selected_column}", min_value=min_value, max_value=max_value, value=min_value)
 
-    # Step 3: Set the threshold for filtering
-    filter_threshold = st.number_input(f"Set the threshold for {selected_column}", min_value=0.0, max_value=1.0, step=0.01, value=0.45)
-
-    # Step 4: Select a file to visualize if multiple files are uploaded
+    # Step 5: Select a file to visualize if multiple files are uploaded
     if len(uploaded_files) > 1:
         selected_file = st.selectbox("Select a file to visualize", [file.name for file in uploaded_files])
     else:
         selected_file = uploaded_files[0].name
-
+    
     # Preprocess data for the selected file
     st.write(f"Displaying data from: {selected_file}")
     df = dataframes[selected_file]
-
-    # Step 5: Display the data before filtering
+    
+    # Step 6: Display the data before filtering
     st.write("### Data before filtering")
     df_before, df_filtered = preprocess_data(df, selected_column, filter_threshold)
     st.line_chart(df_before[selected_column])  # Visualize the data before filtering
-
-    # Step 6: Display the data after filtering
+    
+    # Step 7: Display the data after filtering
     st.write("### Data after filtering")
     st.line_chart(df_filtered[selected_column])  # Visualize the data after filtering
