@@ -12,7 +12,7 @@ from sklearn.ensemble import IsolationForest
 # Function to extract ZIP structure
 def extract_zip_structure(zip_path):
     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        file_structure = {}
+        file_structure = {"root": []}
         for file in zip_ref.namelist():
             parts = file.split('/')
             if len(parts) > 1:
@@ -22,10 +22,8 @@ def extract_zip_structure(zip_path):
                 if filename.endswith('.csv'):
                     file_structure[folder].append(filename)
             else:
-                if 'root' not in file_structure:
-                    file_structure['root'] = []
                 if file.endswith('.csv'):
-                    file_structure['root'].append(file)
+                    file_structure["root"].append(file)
     return file_structure
 
 # Feature extraction function
@@ -75,7 +73,7 @@ if uploaded_file:
     # Load and Display Raw Data
     if st.button("See Raw Data"):
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-            with zip_ref.open(f"{selected_folder}/{selected_csv}") as f:
+            with zip_ref.open(f"{selected_folder}/{selected_csv}" if selected_folder != "root" else selected_csv) as f:
                 df = pd.read_csv(f)
                 
                 # Plot Raw Data
@@ -122,7 +120,7 @@ if uploaded_file:
         
         for csv_file in csv_files:
             with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                with zip_ref.open(f"{selected_folder}/{csv_file}") as f:
+                with zip_ref.open(f"{selected_folder}/{csv_file}" if selected_folder != "root" else csv_file) as f:
                     df = pd.read_csv(f)
                     if selected_bead_number < len(bead_counts):
                         start, end = start_points[selected_bead_number], end_points[selected_bead_number]
